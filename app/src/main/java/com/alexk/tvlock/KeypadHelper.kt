@@ -5,17 +5,18 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.LinearLayout
 
 /**
  * Hidden on-screen keypad for remotes without number buttons.
  * Summoned by 3x DPAD_UP within 2 s (the Up key still works normally as a
  * navigation key between presses); BACK hides it again.
  * The keypad is GONE until summoned — nothing is permanently visible.
+ * It inflates as a ScrollView overlay into a FrameLayout root, so a short
+ * screen never clips rows (they become scrollable instead).
  */
 class KeypadHelper(
     private val activity: Activity,
-    private val container: LinearLayout,
+    private val container: ViewGroup,
     private val onDigit: (String) -> Unit,
     private val onBackspace: () -> Unit,
     private val onClear: () -> Unit,
@@ -62,11 +63,29 @@ class KeypadHelper(
             root!!.findViewById<Button>(R.id.kx).setOnClickListener { onClear() }
         }
         root!!.visibility = View.VISIBLE
+        blurContent(true)
         root!!.findViewById<Button>(R.id.k1).requestFocus()
     }
 
     fun hide() {
-        if (visible) root!!.visibility = View.GONE
+        if (visible) {
+            root!!.visibility = View.GONE
+            blurContent(false)
+        }
+    }
+
+    /** real blur of the screen behind the keypad (API 31+), scrim dim covers older */
+    private fun blurContent(on: Boolean) {
+        if (android.os.Build.VERSION.SDK_INT < 31) return
+        try {
+            val content = (0 until container.childCount)
+                .map { container.getChildAt(it) }
+                .firstOrNull { it !== root }
+            content?.setRenderEffect(
+                if (on) android.graphics.RenderEffect.createBlurEffect(25f, 25f,
+                        android.graphics.Shader.TileMode.CLAMP)
+                else null)
+        } catch (_: Exception) {}
     }
 
     companion object {

@@ -1,62 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:background="#101418"
-    android:padding="24dp">
+    android:background="#101418">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_title"
-        android:textSize="28sp"
-        android:textColor="#FFFFFF" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
 
-    <TextView
-        android:id="@+id/version_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:textSize="15sp"
-        android:textColor="#FFC107" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_title"
+            android:textSize="28sp"
+            android:textColor="#FFFFFF" />
 
-    <TextView
-        android:id="@+id/status_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:textSize="16sp"
-        android:textColor="#B0C4DE"
-        android:gravity="center" />
+        <TextView
+            android:id="@+id/version_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textSize="15sp"
+            android:textColor="#FFC107" />
 
-    <Button
-        android:id="@+id/btn_setup_pin"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:text="@string/btn_setup_pin" />
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textSize="16sp"
+            android:textColor="#B0C4DE"
+            android:gravity="center" />
 
-    <Button
-        android:id="@+id/btn_grace"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/btn_grace" />
+        <Button
+            android:id="@+id/btn_setup_pin"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/btn_setup_pin" />
 
-    <Button
-        android:id="@+id/btn_blocked"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/btn_blocked" />
+        <Button
+            android:id="@+id/btn_grace"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/btn_grace" />
 
-    <Button
-        android:id="@+id/btn_service"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/btn_service" />
-</LinearLayout>
+        <Button
+            android:id="@+id/btn_blocked"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/btn_blocked" />
+
+        <Button
+            android:id="@+id/btn_service"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/btn_service" />
+    </LinearLayout>
+</FrameLayout>

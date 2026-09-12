@@ -11,7 +11,7 @@ class Prefs(context: Context) {
     fun setPin(v: String) = sp.edit().putString("pin", v).apply()
 
     fun blockedList(): Set<String> =
-        sp.getStringSet("blocked", setOf(DEFAULT_BLOCKED)) ?: setOf(DEFAULT_BLOCKED)
+        sp.getStringSet("blocked", emptySet()) ?: emptySet()
 
     fun setBlocked(pkgs: Set<String>) = sp.edit().putStringSet("blocked", pkgs).apply()
 
@@ -25,7 +25,6 @@ class Prefs(context: Context) {
     fun closeGrace() = sp.edit().putLong("unlock_until", 0L).apply()
 
     companion object {
-        const val DEFAULT_BLOCKED = "org.smarttube.stable"
         val GRACE_CYCLE = listOf(0, 5, 15, 30, 60, -1)
     }
 }

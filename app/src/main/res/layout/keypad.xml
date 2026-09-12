@@ -1,22 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/keypad_root"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="20dp"
-    android:columnCount="3"
-    android:visibility="gone">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#B3050708"
+    android:clickable="true"
+    android:focusable="true">
 
-    <Button android:id="@+id/k1" style="@style/KeypadBtn" android:text="1" />
-    <Button android:id="@+id/k2" style="@style/KeypadBtn" android:text="2" />
-    <Button android:id="@+id/k3" style="@style/KeypadBtn" android:text="3" />
-    <Button android:id="@+id/k4" style="@style/KeypadBtn" android:text="4" />
-    <Button android:id="@+id/k5" style="@style/KeypadBtn" android:text="5" />
-    <Button android:id="@+id/k6" style="@style/KeypadBtn" android:text="6" />
-    <Button android:id="@+id/k7" style="@style/KeypadBtn" android:text="7" />
-    <Button android:id="@+id/k8" style="@style/KeypadBtn" android:text="8" />
-    <Button android:id="@+id/k9" style="@style/KeypadBtn" android:text="9" />
-    <Button android:id="@+id/kc" style="@style/KeypadBtn" android:text="⌫" />
-    <Button android:id="@+id/k0" style="@style/KeypadBtn" android:text="0" />
-    <Button android:id="@+id/kx" style="@style/KeypadBtn" android:text="C" />
-</GridLayout>
+    <LinearLayout
+        android:id="@+id/keypad_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingBottom="24dp">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:columnCount="3">
+
+            <Button android:id="@+id/k1" style="@style/KeypadBtn" android:text="1" />
+            <Button android:id="@+id/k2" style="@style/KeypadBtn" android:text="2" />
+            <Button android:id="@+id/k3" style="@style/KeypadBtn" android:text="3" />
+            <Button android:id="@+id/k4" style="@style/KeypadBtn" android:text="4" />
+            <Button android:id="@+id/k5" style="@style/KeypadBtn" android:text="5" />
+            <Button android:id="@+id/k6" style="@style/KeypadBtn" android:text="6" />
+            <Button android:id="@+id/k7" style="@style/KeypadBtn" android:text="7" />
+            <Button android:id="@+id/k8" style="@style/KeypadBtn" android:text="8" />
+            <Button android:id="@+id/k9" style="@style/KeypadBtn" android:text="9" />
+            <Button android:id="@+id/kc" style="@style/KeypadBtn" android:text="⌫" />
+            <Button android:id="@+id/k0" style="@style/KeypadBtn" android:text="0" />
+            <Button android:id="@+id/kx" style="@style/KeypadBtn" android:text="C" />
+        </GridLayout>
+    </LinearLayout>
+</ScrollView>

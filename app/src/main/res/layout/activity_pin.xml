@@ -1,35 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/pin_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:background="#101418"
-    android:padding="48dp">
+    android:background="#101418">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/locked_title"
-        android:textSize="28sp"
-        android:textColor="#FFFFFF" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="48dp">
 
-    <TextView
-        android:id="@+id/pin_display"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:textSize="48sp"
-        android:textColor="#FFC107"
-        android:minWidth="200dp"
-        android:gravity="center" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/locked_title"
+            android:textSize="28sp"
+            android:textColor="#FFFFFF" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/pin_hint"
-        android:textSize="16sp"
-        android:textColor="#8899A6" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/pin_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textSize="48sp"
+            android:textColor="#FFC107"
+            android:minWidth="200dp"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/pin_hint"
+            android:textSize="16sp"
+            android:textColor="#8899A6" />
+    </LinearLayout>
+</FrameLayout>
