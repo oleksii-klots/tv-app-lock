@@ -2,6 +2,8 @@
 
 # 🔒 TV App Lock
 
+**English** · [Українською](README.ua.md)
+
 **Put a PIN on any app on your Android TV. Built for parents.**
 No root. No cloud. No ads. No tracking.
 
