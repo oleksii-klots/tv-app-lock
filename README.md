@@ -6,8 +6,8 @@
 No root. No cloud. No ads. No tracking.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-2563eb)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/alexeyklots/tv-app-lock?label=release)](https://github.com/alexeyklots/tv-app-lock/releases/latest)
-[![Build](https://img.shields.io/github/actions/workflow/status/alexeyklots/tv-app-lock/ci.yml?branch=main&label=build)](https://github.com/alexeyklots/tv-app-lock/actions)
+[![Release](https://img.shields.io/github/v/release/oleksii-klots/tv-app-lock?label=release)](https://github.com/oleksii-klots/tv-app-lock/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/oleksii-klots/tv-app-lock/ci.yml?branch=main&label=build)](https://github.com/oleksii-klots/tv-app-lock/actions)
 ![Android](https://img.shields.io/badge/Android%20TV-6.0%2B%20(API%2021)-3DDC84?logo=android&logoColor=white)
 ![Offline](https://img.shields.io/badge/works-offline-059669)
 ![Size](https://img.shields.io/badge/APK-~0.8%20MB-7c3aed)
@@ -67,7 +67,7 @@ and the gate appearing.
 ## Install
 
 1. Download `tvapplock-release.apk` from the
-   [latest release](https://github.com/alexeyklots/tv-app-lock/releases/latest)
+   [latest release](https://github.com/oleksii-klots/tv-app-lock/releases/latest)
    and verify it against `SHA256SUMS.txt`.
 2. Enable ADB debugging on the TV (Settings → Device preferences → USB
    debugging; on some builds you must first tap "Build version" 7 times in
