@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="locked_title">🔒 Захищений додаток</string>
+    <string name="pin_hint">Введіть PIN з пульта (4 цифри)</string>
+    <string name="wrong_pin">Невірний PIN</string>
+    <string name="unlocked">Розблоковано</string>
+    <string name="btn_setup_pin">Налаштувати PIN</string>
+    <string name="btn_grace">Grace period (клац = наступне значення)</string>
+    <string name="btn_blocked">Які додатки блокувати</string>
+    <string name="blocked_title">🔒 = під PIN. OK на рядку = перемкнути. Back = назад</string>
+    <string name="self_block_guard">Цей сервіс блокувати себе не може 🙂</string>
+    <string name="grace_set">Grace period: %1$s</string>
+    <string name="grace_reboot">до перезавантаження</string>
+    <string name="grace_always">0 (питати щоразу)</string>
+    <string name="btn_service">Надати дозвіл Usage Access (для роботи локу)</string>
+    <string name="no_usage_settings">Екран дозволів не знайдено — увімкніть доступ вручну в Налаштуваннях</string>
+    <string name="enter_new_pin">Друкуйте новий PIN — 4-та цифра зберігає автоматично</string>
+    <string name="pin_saved">PIN збережено</string>
+    <string name="pin_need_4">Потрібно рівно 4 цифри</string>
+    <string name="status_fmt">PIN: %1$s\nБлокується: %2$s\nGrace: %3$s\nСервіс: %4$s\n%5$s</string>
+    <string name="lock_armed">Замок: заблоковано 🔒</string>
+    <string name="lock_open_fmt">Замок: ВІДКРИТО ще %1$d хв 🔓</string>
+    <string name="lock_open_now">Замок: відкритий сеанс 🔓</string>
+</resources>

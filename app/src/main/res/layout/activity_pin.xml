@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#101418"
+    android:padding="48dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/locked_title"
+        android:textSize="28sp"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/pin_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textSize="48sp"
+        android:textColor="#FFC107"
+        android:minWidth="200dp"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/pin_hint"
+        android:textSize="16sp"
+        android:textColor="#8899A6" />
+</LinearLayout>

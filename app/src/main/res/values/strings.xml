@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_title">TV App Lock</string>
+    <string name="service_description">TV App Lock</string>
+    <string name="locked_title">🔒 Protected app</string>
+    <string name="pin_hint">Enter the 4-digit PIN with your remote</string>
+    <string name="wrong_pin">Wrong PIN</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="btn_setup_pin">Set PIN</string>
+    <string name="btn_grace">Grace period (press = next value)</string>
+    <string name="btn_blocked">Apps to lock</string>
+    <string name="blocked_title">🔒 = locked. Press OK on a row to toggle. Back = exit</string>
+    <string name="self_block_guard">The locker cannot lock itself 🙂</string>
+    <string name="grace_set">Grace period: %1$s</string>
+    <string name="grace_reboot">until reboot</string>
+    <string name="grace_always">0 (ask every time)</string>
+    <string name="btn_service">Grant Usage Access (required)</string>
+    <string name="no_usage_settings">Usage access screen not found — grant it manually in Settings</string>
+    <string name="enter_new_pin">Type a new PIN — the 4th digit saves automatically</string>
+    <string name="pin_typing_fmt">PIN: %1$s</string>
+    <string name="pin_saved">PIN saved</string>
+    <string name="pin_need_4">Exactly 4 digits required</string>
+    <string name="status_fmt">PIN: %1$s\nLocked: %2$s\nGrace: %3$s\nService: %4$s\n%5$s</string>
+    <string name="lock_armed">Lock: armed 🔒</string>
+    <string name="lock_open_fmt">Lock: OPEN for %1$d more min 🔓</string>
+    <string name="lock_open_now">Lock: open session 🔓</string>
+</resources>

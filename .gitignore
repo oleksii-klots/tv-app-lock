@@ -1,0 +1,17 @@
+# Build artifacts
+build/
+.gradle/
+*.apk
+*.aab
+local.properties
+
+# Signing keys — NEVER commit
+.android/
+*.keystore
+*.jks
+secrets/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
