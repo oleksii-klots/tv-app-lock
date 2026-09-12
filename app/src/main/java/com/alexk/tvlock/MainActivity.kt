@@ -13,6 +13,7 @@ class MainActivity : Activity() {
 
     private lateinit var statusText: TextView
     private lateinit var graceBtn: Button
+    private lateinit var keypad: KeypadHelper
     private var pinBuffer = ""
     private var pinMode = false
 
@@ -40,6 +41,8 @@ class MainActivity : Activity() {
             "TV App Lock  v " + (try {
                 packageManager.getPackageInfo(packageName, 0).versionName
             } catch (_: Exception) { "?" })
+        keypad = KeypadHelper(this, findViewById(R.id.main_root),
+            onDigit = { kPinDigit(it) }, onBackspace = { kPinBack() }, onClear = { kPinClear() })
         updateStatus()
     }
 
@@ -115,21 +118,39 @@ class MainActivity : Activity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (pinMode) {
             val digit = keyToDigit(keyCode)
-            if (digit != null && pinBuffer.length < 4) {
-                pinBuffer += digit
-                statusText.text = getString(R.string.pin_typing_fmt, "•".repeat(pinBuffer.length))
-                if (pinBuffer.length == 4) confirmPin() // auto-save, no OK needed
+            if (digit != null) { kPinDigit(digit); return true }
+            if (keyCode == KeyEvent.KEYCODE_DEL) { kPinBack(); return true }
+            if (keyCode == KeyEvent.KEYCODE_BACK && keypad.onBackPressed()) return true
+            if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                if (!keypad.visible) confirmPin()
                 return true
             }
-            if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                confirmPin(); return true
-            }
-            if (keyCode == KeyEvent.KEYCODE_BACK) {
-                pinBuffer = ""; pinMode = false; updateStatus(); return true
-            }
+            keypad.onKeyDown(keyCode)
             return super.onKeyDown(keyCode, event)
         }
+        if (keyCode == KeyEvent.KEYCODE_BACK && keypad.onBackPressed()) return true
+        keypad.onKeyDown(keyCode)
         return super.onKeyDown(keyCode, event)
+    }
+
+    private fun kPinDigit(d: String) {
+        if (pinBuffer.length < 4) {
+            pinBuffer += d
+            statusText.text = getString(R.string.pin_typing_fmt, "•".repeat(pinBuffer.length))
+            if (pinBuffer.length == 4) confirmPin()
+        }
+    }
+
+    private fun kPinBack() {
+        if (pinBuffer.isNotEmpty()) {
+            pinBuffer = pinBuffer.dropLast(1)
+            statusText.text = getString(R.string.pin_typing_fmt, "•".repeat(pinBuffer.length))
+        }
+    }
+
+    private fun kPinClear() {
+        pinBuffer = ""
+        statusText.text = getString(R.string.enter_new_pin)
     }
 
     private fun keyToDigit(k: Int): String? = when (k) {

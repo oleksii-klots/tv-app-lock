@@ -3,20 +3,24 @@ package com.alexk.tvlock
 import android.app.Activity
 import android.os.Bundle
 import android.view.KeyEvent
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 
 class PinActivity : Activity() {
 
     private lateinit var display: TextView
+    private lateinit var keypad: KeypadHelper
     private var entered = ""
-    private var accepted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pin)
         display = findViewById(R.id.pin_display)
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        keypad = KeypadHelper(this, findViewById(R.id.pin_root),
+            onDigit = { feed(it) }, onBackspace = { back() }, onClear = { clear() })
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -33,24 +37,31 @@ class PinActivity : Activity() {
             KeyEvent.KEYCODE_9, KeyEvent.KEYCODE_NUMPAD_9 -> "9"
             else -> null
         }
-        when {
-            digit != null -> {
-                if (entered.length < 4) {
-                    entered += digit
-                    display.text = "•".repeat(entered.length)
-                    if (entered.length == 4) checkPin()
-                }
-                return true
-            }
-            keyCode == KeyEvent.KEYCODE_DEL || keyCode == KeyEvent.KEYCODE_BACK -> {
-                if (entered.isNotEmpty()) {
-                    entered = entered.dropLast(1)
-                    display.text = "•".repeat(entered.length)
-                    return true
-                }
-            }
-        }
+        if (digit != null) { feed(digit); return true }
+        if (keyCode == KeyEvent.KEYCODE_BACK && keypad.onBackPressed()) return true
+        if (keyCode == KeyEvent.KEYCODE_DEL && entered.isNotEmpty()) { back(); return true }
+        keypad.onKeyDown(keyCode)
         return super.onKeyDown(keyCode, event)
+    }
+
+    private fun feed(d: String) {
+        if (entered.length < 4) {
+            entered += d
+            display.text = "•".repeat(entered.length)
+            if (entered.length == 4) checkPin()
+        }
+    }
+
+    private fun back() {
+        if (entered.isNotEmpty()) {
+            entered = entered.dropLast(1)
+            display.text = "•".repeat(entered.length)
+        }
+    }
+
+    private fun clear() {
+        entered = ""
+        display.text = ""
     }
 
     private fun checkPin() {
@@ -66,6 +77,8 @@ class PinActivity : Activity() {
             display.postDelayed({ display.text = "" }, 1500)
         }
     }
+
+    private var accepted = false
 
     override fun onPause() {
         super.onPause()
