@@ -48,13 +48,23 @@ object GateOverlay {
         }
         try {
             wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            val black = object : View(context) {
+            val root = object : android.widget.FrameLayout(context) {
                 override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = true
                 override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = true
                 override fun onTouchEvent(event: MotionEvent): Boolean = true
             }
-            black.isFocusable = true
-            black.isFocusableInTouchMode = true
+            val label = android.widget.TextView(context).apply {
+                text = context.getString(R.string.overlay_locked)
+                setTextColor(Color.WHITE)
+                textSize = 28f
+                gravity = android.view.Gravity.CENTER
+            }
+            root.addView(label, android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.CENTER))
+            root.isFocusable = true
+            root.isFocusableInTouchMode = true
             val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             else
@@ -69,10 +79,10 @@ object GateOverlay {
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 PixelFormat.OPAQUE)
-            black.setBackgroundColor(Color.BLACK)
-            wm!!.addView(black, lp)
-            black.requestFocus()
-            view = black
+            root.setBackgroundColor(Color.BLACK)
+            wm!!.addView(root, lp)
+            root.requestFocus()
+            view = root
             shownAt = now
             android.util.Log.i("TVLOCK", "blackout overlay shown")
         } catch (e: Exception) {

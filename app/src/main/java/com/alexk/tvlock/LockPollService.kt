@@ -139,6 +139,10 @@ class LockPollService : Service() {
         }
         unlockUntil = Prefs(this).unlockUntil()
         if (t in blocked && foregroundChanged && now >= unlockUntil) {
+            // evTs = the event's own timestamp; now-evTs = how late UsageStats
+            // surfaced it to us. This is the detection gap the overlay has to
+            // beat on a fast dedicated-button press.
+            android.util.Log.i("TVLOCK", "detect lag=${now - evTs}ms pkg=$t")
             raiseGate(t, now)
         }
     }
@@ -147,6 +151,8 @@ class LockPollService : Service() {
         gateUp = true
         gateRaisedAt = now
         targetPkg = t
+        // detection latency log: evTs->now tells us how late the UsageStats
+        // event itself is; (now - gateRaisedAt) at the hide tells gate launch lag
         android.util.Log.i("TVLOCK", "gate raising for $t")
         try {
             // instant blackout FIRST: paints in <100 ms from the service and
@@ -159,6 +165,27 @@ class LockPollService : Service() {
                          Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
                          Intent.FLAG_ACTIVITY_SINGLE_TOP)
             })
+            // Kill the app underneath the blackout: even if the profile picker
+            // rendered before the overlay landed, taps cannot reach it and no
+            // video can start. Safe to do because onUnlocked() relaunches the
+            // app by package after a correct PIN. Guarded by gateUp so a fast
+            // unlock (gateUp=false before this fires) never kills the app the
+            // user is legitimately opening.
+            handler.postDelayed({
+                if (gateUp && targetPkg == t) {
+                    try {
+                        val am = Class.forName("android.app.ActivityManager")
+                            .getMethod("getService").invoke(null)
+                        am.javaClass.getMethod("forceStopPackage", String::class.java, Int::class.java)
+                            .invoke(am, t, 0)
+                        android.util.Log.i("TVLOCK", "force-stopped $t under blackout")
+                    } catch (e: Exception) {
+                        // hidden API blocked on this ROM (likely on API 34) — the
+                        // blackout + gate still protect; this is best-effort only
+                        android.util.Log.w("TVLOCK", "force-stop unavailable: ${e.javaClass.simpleName}")
+                    }
+                }
+            }, 500)
             // Cooldown window opens now (gate visible on the launch path / or when
             // the watchdog re-arms after seeing it on top, see tick()).
             recoveryReadyAt = now + RECOVERY_COOLDOWN_MS
@@ -237,7 +264,7 @@ class LockPollService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-        const val POLL_MS = 250L
+        const val POLL_MS = 120L
         const val GATE_CONFIRM_MS = 2_500L
         // Cooldown window for the watchdog recovery re-raise, measured from the
         // last raise. The 2.5 s watchdog check paces it to >= 2.5 s anyway; this

@@ -3,6 +3,7 @@
     <string name="app_title">TV App Lock</string>
     <string name="service_description">TV App Lock</string>
     <string name="locked_title">🔒 Protected app</string>
+    <string name="overlay_locked">⏳ Loading lock screen…</string>
     <string name="pin_hint">Enter the 4-digit PIN with your remote</string>
     <string name="wrong_pin">Wrong PIN</string>
     <string name="unlocked">Unlocked</string>

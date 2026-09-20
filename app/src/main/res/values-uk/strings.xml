@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="locked_title">🔒 Захищений додаток</string>
+    <string name="overlay_locked">⏳ Завантажую екран блокування…</string>
     <string name="pin_hint">Введіть PIN з пульта (4 цифри)</string>
     <string name="wrong_pin">Невірний PIN</string>
     <string name="unlocked">Розблоковано</string>
