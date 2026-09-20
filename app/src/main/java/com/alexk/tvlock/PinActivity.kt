@@ -89,15 +89,19 @@ class PinActivity : Activity() {
         if (!accepted) LockPollService.instance?.onGateDismissed()
     }
 
-    // Launch-shortcut class of the RT-G2 remote. 268 = KEYCODE_YOUTUBE (confirmed
-    // storm key), 177 = the Netflix/SmartTube dedicated button (stock AOSP 177
-    // = KEYCODE_MENU; forensics 20.09: relaunches the blocked app over the gate).
-    // D-PAD / navigation-DPAD keys are deliberately NOT consumed — the PIN UI still
-    // runs on the D-pad, 3×DPAD_UP within 2 s summons the hidden keypad, and
-    // BACK hides it without leaving the screen.
+    // Launch-shortcut class of the RT-G2 remote.
+    //   268  = the dedicated YouTube button. There is NO public named constant for
+    //          it in android.view.KeyEvent (KEYCODE_YOUTUBE is not a real SDK symbol;
+    //          it is the raw int the button emits).
+    //   177  = the dedicated Netflix/SmartTube button = KeyEvent.KEYCODE_MENU
+    //          (stock AOSP names 177 MENU; forensics 20.09: it relaunches the
+    //          blocked app over the gate).
+    // DPAD / navigation-DPAD keys are deliberately NOT consumed — the PIN UI still
+    // runs on the D-pad, 3×DPAD_UP within 2 s summons the hidden keypad, and BACK
+    // hides it without leaving the screen.
     private val LAUNCH_SHORTCUTS: Set<Int> = setOf(
-        KeyEvent.KEYCODE_YOUTUBE,      // 268
-        KeyEvent.KEYCODE_MENU,         // 177 — RT-G2 Netflix/SmartTube button
+        268,                       // RT-G2 YouTube button (raw keycode)
+        KeyEvent.KEYCODE_MENU,     // 177 — RT-G2 Netflix/SmartTube button
     )
 
     private fun isShortcutLaunchKey(keyCode: Int): Boolean = LAUNCH_SHORTCUTS.contains(keyCode)
