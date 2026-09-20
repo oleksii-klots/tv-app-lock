@@ -90,10 +90,27 @@ class LockPollService : Service() {
             seeded = true
         }
 
+        // Hard cap: the blackout must never outlive gate logic under any
+        // circumstance, even a bug — an unremovable black screen is a brick.
+        if (GateOverlay.isShown && now - GateOverlay.shownAt > OVERLAY_MAX_MS) {
+            android.util.Log.w("TVLOCK", "overlay hard cap — forcing hide")
+            GateOverlay.hide()
+        }
+
         // watchdog: a gate we raised must actually be on screen
         if (gateUp) {
             if (t == packageName) {
-                // gate is up — fine
+                // gate is up — the blackout did its job, the PIN screen is
+                // visible now; drop the overlay underneath it
+                GateOverlay.hide()
+                return
+            }
+            if (t !in blocked) {
+                // neither the gate nor a blocked app is on top (parent pressed
+                // HOME, launcher is showing): nothing to guard — stand down and
+                // release the blackout immediately
+                gateUp = false
+                GateOverlay.hide()
                 return
             }
             if (now - gateRaisedAt > GATE_CONFIRM_MS) {
@@ -132,11 +149,10 @@ class LockPollService : Service() {
         targetPkg = t
         android.util.Log.i("TVLOCK", "gate raising for $t")
         try {
-            // raise the gate directly — the old HOME-park launched the launcher
-            // (a full extra app launch) before PinActivity, adding ~2-6 s to the
-            // gate delay; on a fast YouTube-button press the app beat the gate.
-            // A vanished gate is still covered: the watchdog re-raise in tick()
-            // re-arms it within ~2.5 s if PinActivity was silently denied.
+            // instant blackout FIRST: paints in <100 ms from the service and
+            // swallows input, so the blocked app stops being visible/usable
+            // regardless of how long the gate activity takes to launch below.
+            GateOverlay.show(this, now)
             startActivity(Intent(this, PinActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
                          Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -147,8 +163,11 @@ class LockPollService : Service() {
             // the watchdog re-arms after seeing it on top, see tick()).
             recoveryReadyAt = now + RECOVERY_COOLDOWN_MS
         } catch (e: Exception) {
+            // Fail CLOSED: keep gateUp true so the watchdog keeps re-raising
+            // every GATE_CONFIRM_MS — the blackout (if shown) keeps the screen
+            // dead meanwhile. Clearing gateUp here is what used to kill the
+            // lock silently (pre-1.12 incident).
             android.util.Log.e("TVLOCK", "gate startActivity FAILED", e)
-            gateUp = false
         }
     }
 
@@ -160,6 +179,7 @@ class LockPollService : Service() {
         p.setBlocked(set)
         unlockUntil = 0L
         gateUp = false            // re-arm instantly on any config change
+        GateOverlay.hide()        // parent touched settings: never trap a black screen
         seeded = false            // re-seed top app
     }
 
@@ -175,6 +195,7 @@ class LockPollService : Service() {
         unlockUntil = until
         val t = targetPkg
         gateUp = false
+        GateOverlay.hide()
         targetPkg = null
         pendingConsume = t
         pendingUntil = System.currentTimeMillis() + 10_000
@@ -193,6 +214,7 @@ class LockPollService : Service() {
 
     fun onGateDismissed() {
         gateUp = false
+        GateOverlay.hide()   // never trap a black screen over a non-blocked screen
     }
 
     /** Self-heal if the ROM kills the FGS: re-arm every 5 min via AlarmManager. */
@@ -221,6 +243,11 @@ class LockPollService : Service() {
         // last raise. The 2.5 s watchdog check paces it to >= 2.5 s anyway; this
         // is the explicit guard so a failed gate can't re-raise on every tick.
         const val RECOVERY_COOLDOWN_MS = 1_500L
+        // Absolute ceiling for the blackout overlay regardless of gate state:
+        // a stuck black screen is worse than a leaked frame. Well above
+        // GATE_CONFIRM_MS + RECOVERY_COOLDOWN_MS so it never fires in normal
+        // operation — it is the last-resort fuse.
+        const val OVERLAY_MAX_MS = 10_000L
         var instance: LockPollService? = null
     }
 }
