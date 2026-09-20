@@ -15,8 +15,8 @@ android {
         applicationId = "com.alexk.tvlock"
         minSdk = 21
         targetSdk = 34
-        versionCode = 18
-        versionName = "1.17"
+        versionCode = 19
+        versionName = "1.18"
     }
 
     if (!releaseKeystore.isNullOrBlank()) {

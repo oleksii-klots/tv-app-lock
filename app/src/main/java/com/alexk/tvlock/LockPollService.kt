@@ -132,9 +132,11 @@ class LockPollService : Service() {
         targetPkg = t
         android.util.Log.i("TVLOCK", "gate raising for $t")
         try {
-            // park the blocked app first: video must never render under the gate
-            startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            // raise the gate directly — the old HOME-park launched the launcher
+            // (a full extra app launch) before PinActivity, adding ~2-6 s to the
+            // gate delay; on a fast YouTube-button press the app beat the gate.
+            // A vanished gate is still covered: the watchdog re-raise in tick()
+            // re-arms it within ~2.5 s if PinActivity was silently denied.
             startActivity(Intent(this, PinActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
                          Intent.FLAG_ACTIVITY_CLEAR_TOP or
