@@ -24,6 +24,10 @@ class PinActivity : Activity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        // Launch-shortcut hardware keys must be consumed while the gate is up,
+        // otherwise the system relaunches the blocked app over the PIN screen
+        // and sustains the swap storm that deadlocks change-only gating.
+        if (isShortcutLaunchKey(keyCode)) return true
         val digit = when (keyCode) {
             KeyEvent.KEYCODE_0, KeyEvent.KEYCODE_NUMPAD_0 -> "0"
             KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1 -> "1"
@@ -84,4 +88,17 @@ class PinActivity : Activity() {
         super.onPause()
         if (!accepted) LockPollService.instance?.onGateDismissed()
     }
+
+    // Launch-shortcut class of the RT-G2 remote. 268 = KEYCODE_YOUTUBE (confirmed
+    // storm key), 177 = the Netflix/SmartTube dedicated button (stock AOSP 177
+    // = KEYCODE_MENU; forensics 20.09: relaunches the blocked app over the gate).
+    // D-PAD / navigation-DPAD keys are deliberately NOT consumed — the PIN UI still
+    // runs on the D-pad, 3×DPAD_UP within 2 s summons the hidden keypad, and
+    // BACK hides it without leaving the screen.
+    private val LAUNCH_SHORTCUTS: Set<Int> = setOf(
+        KeyEvent.KEYCODE_YOUTUBE,      // 268
+        KeyEvent.KEYCODE_MENU,         // 177 — RT-G2 Netflix/SmartTube button
+    )
+
+    private fun isShortcutLaunchKey(keyCode: Int): Boolean = LAUNCH_SHORTCUTS.contains(keyCode)
 }

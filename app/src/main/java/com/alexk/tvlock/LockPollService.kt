@@ -33,6 +33,9 @@ class LockPollService : Service() {
     private var seeded = false
     private var gateUp = false
     private var gateRaisedAt = 0L
+    // Cooldown start for the watchdog recovery re-raise, set when the gate was
+    // confirmed visible. 0 = first ever raise always allowed.
+    private var recoveryReadyAt = 0L
     private var targetPkg: String? = null
     private var pendingConsume: String? = null
     private var pendingUntil = 0L
@@ -94,8 +97,19 @@ class LockPollService : Service() {
                 return
             }
             if (now - gateRaisedAt > GATE_CONFIRM_MS) {
+                // Gate vanished while a blocked app was on top: re-arm and give the
+                // gate a recovery re-raise chance even without a new foreground
+                // change (swap storm collapses inside one poll window, so
+                // foregroundChanged never fires again). ONE re-raise, gated by a
+                // cooldown — only here, and only because gateUp was true and the
+                // gate is proven gone. Presence-gating is NOT used: if the blocked
+                // app is merely staying foreground (never gated), nothing re-fires.
                 android.util.Log.w("TVLOCK", "gate did not appear — re-arming")
                 gateUp = false
+                if (t in blocked && now >= unlockUntil && now >= recoveryReadyAt) {
+                    raiseGate(t, now)
+                    return
+                }
             } else {
                 return
             }
@@ -127,6 +141,9 @@ class LockPollService : Service() {
                          Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
                          Intent.FLAG_ACTIVITY_SINGLE_TOP)
             })
+            // Cooldown window opens now (gate visible on the launch path / or when
+            // the watchdog re-arms after seeing it on top, see tick()).
+            recoveryReadyAt = now + RECOVERY_COOLDOWN_MS
         } catch (e: Exception) {
             android.util.Log.e("TVLOCK", "gate startActivity FAILED", e)
             gateUp = false
@@ -198,6 +215,10 @@ class LockPollService : Service() {
     companion object {
         const val POLL_MS = 250L
         const val GATE_CONFIRM_MS = 2_500L
+        // Cooldown window for the watchdog recovery re-raise, measured from the
+        // last raise. The 2.5 s watchdog check paces it to >= 2.5 s anyway; this
+        // is the explicit guard so a failed gate can't re-raise on every tick.
+        const val RECOVERY_COOLDOWN_MS = 1_500L
         var instance: LockPollService? = null
     }
 }
