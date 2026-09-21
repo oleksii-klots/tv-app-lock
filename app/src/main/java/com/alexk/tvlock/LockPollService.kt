@@ -99,10 +99,18 @@ class LockPollService : Service() {
 
         // Hard cap: the blackout must never outlive gate logic under any
         // circumstance, even a bug — an unremovable black screen is a brick.
+        // But the fuse may never drop the screen onto a BLOCKED app: there it
+        // re-raises the gate instead (fresh 10 s budget each round).
         if (GateOverlay.isShown && now - GateOverlay.shownAt > OVERLAY_MAX_MS) {
-            FileLogger.log("overlay HARD CAP 10s — forcing hide (hold=$blackoutHold gateUp=$gateUp top=$t)")
-            blackoutHold = false
-            GateOverlay.hide()
+            if (t in blocked) {
+                FileLogger.log("fuse: blocked top=$t under stale overlay — re-raising")
+                gateUp = false
+                raiseGate(t, now)
+            } else {
+                FileLogger.log("overlay HARD CAP 10s — forcing hide (hold=$blackoutHold gateUp=$gateUp top=$t)")
+                blackoutHold = false
+                GateOverlay.hide()
+            }
         }
 
         // Release fuse for the onPause re-blackout: if the gate is down, an
@@ -167,6 +175,20 @@ class LockPollService : Service() {
         if (t == packageName) return
         if (t == pendingConsume && now < pendingUntil) {
             pendingConsume = null
+            return
+        }
+        // PRESENCE path: the blackout is up and a blocked app is underneath
+        // while the gate is NOT (a spam-press shoved PinActivity aside and
+        // onGateDismissed re-blacked instantly, so gateUp went false without a
+        // new foreground-change). Waiting for another change is wrong — the app
+        // just sits there. The overlay itself is the trigger: keep the gate up.
+        // (A legit unlock closes the overlay in onUnlocked, so this can never
+        // fight a parent who is inside the app during grace.)
+        if (GateOverlay.isShown && t in blocked && now >= unlockUntil) {
+            if (now - gateRaisedAt > GATE_CONFIRM_MS) {
+                FileLogger.log("presence: blocked $t under overlay, gate down — raising")
+                raiseGate(t, now)
+            }
             return
         }
         unlockUntil = Prefs(this).unlockUntil()
