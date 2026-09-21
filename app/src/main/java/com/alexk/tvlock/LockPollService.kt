@@ -105,6 +105,15 @@ class LockPollService : Service() {
             GateOverlay.hide()
         }
 
+        // Release fuse for the onPause re-blackout: if the gate is down, an
+        // overlay is up, and NEITHER the gate nor a blocked app is on top
+        // (parent pressed HOME from the gate → launcher), nothing is being
+        // guarded — let the screen live again right away.
+        if (!gateUp && GateOverlay.isShown && t != packageName && t !in blocked) {
+            FileLogger.log("overlay release: top=$t, no gate, nothing blocked")
+            GateOverlay.hide()
+        }
+
         // watchdog: a gate we raised must actually be on screen
         if (gateUp) {
             if (t == packageName) {
@@ -268,7 +277,13 @@ class LockPollService : Service() {
     fun onGateDismissed() {
         gateUp = false
         blackoutHold = false
-        GateOverlay.hide()   // never trap a black screen over a non-blocked screen
+        // The gate was shoved aside (a dedicated-button relaunch lands on top
+        // of it). onPause fires the same instant the shove happens — far ahead
+        // of any poll detection — so re-blackout RIGHT NOW instead of exposing
+        // the app for the 150-300 ms until the next DETECT. show() is a no-op
+        // when the overlay is already up; the re-raise of the gate then hides
+        // it again the moment the PIN is confirmed on top.
+        GateOverlay.show(applicationContext, System.currentTimeMillis())
     }
 
     /** Self-heal if the ROM kills the FGS: re-arm every 5 min via AlarmManager. */
