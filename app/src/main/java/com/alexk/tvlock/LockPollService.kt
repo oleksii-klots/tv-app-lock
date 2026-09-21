@@ -39,6 +39,11 @@ class LockPollService : Service() {
     private var targetPkg: String? = null
     private var pendingConsume: String? = null
     private var pendingUntil = 0L
+    // True from the moment we force-stopped the blocked app under the blackout
+    // until the gate is confirmed (or a fuse/release path clears it). While
+    // true, the tick() stand-down must NOT release the overlay: a spam-press
+    // would otherwise land on the freshly-revealed launcher icon.
+    private var blackoutHold = false
 
     override fun onCreate() {
         super.onCreate()
@@ -94,6 +99,7 @@ class LockPollService : Service() {
         // circumstance, even a bug — an unremovable black screen is a brick.
         if (GateOverlay.isShown && now - GateOverlay.shownAt > OVERLAY_MAX_MS) {
             android.util.Log.w("TVLOCK", "overlay hard cap — forcing hide")
+            blackoutHold = false
             GateOverlay.hide()
         }
 
@@ -102,10 +108,24 @@ class LockPollService : Service() {
             if (t == packageName) {
                 // gate is up — the blackout did its job, the PIN screen is
                 // visible now; drop the overlay underneath it
+                blackoutHold = false
                 GateOverlay.hide()
                 return
             }
             if (t !in blocked) {
+                // The blocked app vanished because OUR force-stop killed it and
+                // the launcher is showing: HOLD the blackout. A spam-press can
+                // land at any moment, and releasing the overlay here is exactly
+                // the window a fast repeat click slips through.
+                if (blackoutHold) {
+                    // The PIN window must be coming on top of the blackout; if
+                    // the gate never confirmed by the watchdog deadline, retry
+                    // raising it — the overlay keeps the screen dead meanwhile.
+                    if (now - gateRaisedAt > GATE_CONFIRM_MS) {
+                        targetPkg?.let { raiseGate(it, now) }
+                    }
+                    return
+                }
                 // neither the gate nor a blocked app is on top (parent pressed
                 // HOME, launcher is showing): nothing to guard — stand down and
                 // release the blackout immediately
@@ -178,7 +198,8 @@ class LockPollService : Service() {
                             .getMethod("getService").invoke(null)
                         am.javaClass.getMethod("forceStopPackage", String::class.java, Int::class.java)
                             .invoke(am, t, 0)
-                        android.util.Log.i("TVLOCK", "force-stopped $t under blackout")
+                        blackoutHold = true
+                        android.util.Log.i("TVLOCK", "force-stopped $t under blackout — holding")
                     } catch (e: Exception) {
                         // hidden API blocked on this ROM (likely on API 34) — the
                         // blackout + gate still protect; this is best-effort only
@@ -206,6 +227,7 @@ class LockPollService : Service() {
         p.setBlocked(set)
         unlockUntil = 0L
         gateUp = false            // re-arm instantly on any config change
+        blackoutHold = false      // settings opened by the parent: release all holds
         GateOverlay.hide()        // parent touched settings: never trap a black screen
         seeded = false            // re-seed top app
     }
@@ -222,6 +244,7 @@ class LockPollService : Service() {
         unlockUntil = until
         val t = targetPkg
         gateUp = false
+        blackoutHold = false
         GateOverlay.hide()
         targetPkg = null
         pendingConsume = t
@@ -241,6 +264,7 @@ class LockPollService : Service() {
 
     fun onGateDismissed() {
         gateUp = false
+        blackoutHold = false
         GateOverlay.hide()   // never trap a black screen over a non-blocked screen
     }
 
