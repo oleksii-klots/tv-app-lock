@@ -28,6 +28,8 @@ object FileLogger {
             logFile = File(dir, "tvlock.log")
             if ((logFile?.length() ?: 0L) > TRIM_AT) logFile?.delete()
             writer = FileWriter(logFile, true)
+            // adb must be able to `cat` this for field diagnosis
+            logFile?.setReadable(true, false)
             android.util.Log.i("TVLOCK", "file logger at ${logFile?.absolutePath}")
         } catch (e: Exception) {
             android.util.Log.e("TVLOCK", "file logger init failed", e)
@@ -47,7 +49,8 @@ object FileLogger {
                 synchronized(w) {
                     runCatching { w.close() }
                     f.delete()
-                    writer = FileWriter(f, true).also { writer = it }
+                    FileWriter(f, true).also { writer = it }
+                    f.setReadable(true, false)
                 }
             }
         } catch (_: Exception) { /* never break the lock over logging */ }
