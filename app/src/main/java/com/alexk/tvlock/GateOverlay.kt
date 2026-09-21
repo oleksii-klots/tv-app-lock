@@ -49,7 +49,15 @@ object GateOverlay {
         try {
             wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val root = object : android.widget.FrameLayout(context) {
-                override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = true
+                override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+                    // dedicated launch buttons arrive here if the ROM dispatches
+                    // to the focused window; if the child still reaches YouTube,
+                    // these lines prove the interception either does or doesn't happen
+                    if (keyCode == 268 || keyCode == KeyEvent.KEYCODE_MENU) {
+                        FileLogger.log("overlay swallowed key $keyCode")
+                    }
+                    return true
+                }
                 override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = true
                 override fun onTouchEvent(event: MotionEvent): Boolean = true
             }
@@ -84,9 +92,9 @@ object GateOverlay {
             root.requestFocus()
             view = root
             shownAt = now
-            android.util.Log.i("TVLOCK", "blackout overlay shown")
+            FileLogger.log("overlay SHOW")
         } catch (e: Exception) {
-            android.util.Log.e("TVLOCK", "overlay show FAILED", e)
+            FileLogger.log("overlay show FAILED: ${e.javaClass.simpleName}: ${e.message}")
             view = null
         }
     }
@@ -96,9 +104,9 @@ object GateOverlay {
         view = null
         try {
             wm?.removeView(v)
-            android.util.Log.i("TVLOCK", "blackout overlay hidden")
+            FileLogger.log("overlay HIDE (was up ${System.currentTimeMillis() - shownAt}ms)")
         } catch (e: Exception) {
-            android.util.Log.e("TVLOCK", "overlay hide FAILED", e)
+            FileLogger.log("overlay hide FAILED: ${e.javaClass.simpleName}: ${e.message}")
         }
     }
 }

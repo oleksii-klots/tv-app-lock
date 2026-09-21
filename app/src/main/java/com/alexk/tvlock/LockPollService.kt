@@ -48,6 +48,8 @@ class LockPollService : Service() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        FileLogger.init(this)
+        FileLogger.log("service onCreate")
         handler = Handler(Looper.getMainLooper())
         usm = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
         LockNotification.makeChannel(this)
@@ -98,7 +100,7 @@ class LockPollService : Service() {
         // Hard cap: the blackout must never outlive gate logic under any
         // circumstance, even a bug — an unremovable black screen is a brick.
         if (GateOverlay.isShown && now - GateOverlay.shownAt > OVERLAY_MAX_MS) {
-            android.util.Log.w("TVLOCK", "overlay hard cap — forcing hide")
+            FileLogger.log("overlay HARD CAP 10s — forcing hide (hold=$blackoutHold gateUp=$gateUp top=$t)")
             blackoutHold = false
             GateOverlay.hide()
         }
@@ -122,6 +124,7 @@ class LockPollService : Service() {
                     // the gate never confirmed by the watchdog deadline, retry
                     // raising it — the overlay keeps the screen dead meanwhile.
                     if (now - gateRaisedAt > GATE_CONFIRM_MS) {
+                        FileLogger.log("hold: gate retry (top=$t launcher-state)")
                         targetPkg?.let { raiseGate(it, now) }
                     }
                     return
@@ -162,7 +165,7 @@ class LockPollService : Service() {
             // evTs = the event's own timestamp; now-evTs = how late UsageStats
             // surfaced it to us. This is the detection gap the overlay has to
             // beat on a fast dedicated-button press.
-            android.util.Log.i("TVLOCK", "detect lag=${now - evTs}ms pkg=$t")
+            FileLogger.log("DETECT lag=${now - evTs}ms pkg=$t")
             raiseGate(t, now)
         }
     }
@@ -199,11 +202,11 @@ class LockPollService : Service() {
                         am.javaClass.getMethod("forceStopPackage", String::class.java, Int::class.java)
                             .invoke(am, t, 0)
                         blackoutHold = true
-                        android.util.Log.i("TVLOCK", "force-stopped $t under blackout — holding")
+                        FileLogger.log("force-stop $t OK — blackout HOLDING")
                     } catch (e: Exception) {
                         // hidden API blocked on this ROM (likely on API 34) — the
                         // blackout + gate still protect; this is best-effort only
-                        android.util.Log.w("TVLOCK", "force-stop unavailable: ${e.javaClass.simpleName}")
+                        FileLogger.log("force-stop DENIED: ${e.javaClass.simpleName}")
                     }
                 }
             }, 500)
