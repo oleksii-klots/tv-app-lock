@@ -58,11 +58,14 @@ class MainActivity : Activity() {
     private fun hasUsageAccess(): Boolean {
         return try {
             val appops = getSystemService(APP_OPS_SERVICE) as android.app.AppOpsManager
-            val mode = appops.unsafeCheckOpNoThrow(
+            // checkOpNoThrow is API 19+; unsafeCheckOpNoThrow is API 29+ and threw an
+            // uncaught NoSuchMethodError on Android 9 (issue #1) — catch Throwable too,
+            // an Error is not an Exception
+            val mode = appops.checkOpNoThrow(
                 android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
                 android.os.Process.myUid(), packageName)
             mode == android.app.AppOpsManager.MODE_ALLOWED
-        } catch (_: Exception) { false }
+        } catch (_: Throwable) { false }
     }
 
     private fun startServiceIfAllowed() {
