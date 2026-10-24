@@ -64,31 +64,45 @@ and the gate appearing.
 ## Requirements
 
 - Android TV 6.0+ (API 21), tested on Android 14
-- ADB available for the one-time install and permission grant
+- A PC with ADB is optional — only the fallback install/permission path needs it
 
 ## Install
 
-1. Download `tvapplock-release.apk` from the
-   [latest release](https://github.com/oleksii-klots/tv-app-lock/releases/latest)
-   and verify it against `SHA256SUMS.txt`.
-2. Enable ADB debugging on the TV (Settings → Device preferences → USB
-   debugging; on some builds you must first tap "Build version" 7 times in
-   About).
-3. From any computer on the same network:
+**1. Get the APK.** Download `tvapplock-release.apk` from the
+[latest release](https://github.com/oleksii-klots/tv-app-lock/releases/latest)
+and verify it against `SHA256SUMS.txt` (optional).
+
+**2. Install it.** Any sideload route works:
+- *Without a PC* — copy the APK to a USB stick (or use any downloader /
+  file-manager app), open it on the TV and allow "Unknown sources" when
+  prompted.
+- *Via ADB* (guaranteed on every firmware) — enable ADB debugging on the TV
+  (Settings → Device preferences → USB debugging; on some builds you must
+  first tap "Build version" 7 times in About), then from any computer on the
+  same network:
 
 ```bash
 adb connect <TV_IP>:5555
 adb install tvapplock-release.apk
-
-# grant the two permissions the locker needs (one-time setup)
-adb shell appops set com.alexk.tvlock GET_USAGE_STATS allow
-adb shell appops set com.alexk.tvlock SYSTEM_ALERT_WINDOW allow
-
-# start the guardian service
-adb shell am start-foreground-service com.alexk.tvlock/.LockPollService
 ```
 
-4. Open **TV App Lock** on the TV → *Set PIN* → pick the apps to lock.
+**3. Grant the two permissions the locker needs (one-time).**
+- *Usage Access* — open **TV App Lock** and press the permission button; it
+  opens the system screen where you enable "Usage access" for the app.
+  Without it the service cannot see which app is in the foreground.
+- *Display over other apps* — Settings → Apps → Special access → Display over
+  other apps → **TV App Lock**. Without it the PIN screen still works, but the
+  instant blackout overlay is skipped.
+
+If those Settings screens are missing on your firmware, grant both via ADB:
+
+```bash
+adb shell appops set com.alexk.tvlock GET_USAGE_STATS allow
+adb shell appops set com.alexk.tvlock SYSTEM_ALERT_WINDOW allow
+```
+
+**4. Open TV App Lock on the TV** → *Set PIN* → pick the apps to lock. The
+guardian service starts by itself and survives reboots — no extra steps.
 
 ## Known limitations (honest list)
 
