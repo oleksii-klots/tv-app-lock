@@ -23,6 +23,8 @@ class KeypadHelper(
 ) {
     private var root: ViewGroup? = null
     private val upTimes = ArrayDeque<Long>()
+    private var savedFocus: View? = null
+    private var savedDescendantFocusability: Int? = null
 
     val visible: Boolean get() = root?.visibility == View.VISIBLE
 
@@ -62,8 +64,10 @@ class KeypadHelper(
             root!!.findViewById<Button>(R.id.kc).setOnClickListener { onBackspace() }
             root!!.findViewById<Button>(R.id.kx).setOnClickListener { onClear() }
         }
+        savedFocus = activity.currentFocus
         root!!.visibility = View.VISIBLE
         blurContent(true)
+        blockContentFocus(true)
         root!!.findViewById<Button>(R.id.k1).requestFocus()
     }
 
@@ -71,21 +75,45 @@ class KeypadHelper(
         if (visible) {
             root!!.visibility = View.GONE
             blurContent(false)
+            blockContentFocus(false)
+            savedFocus?.takeIf { it.isFocusable && it.isEnabled && it.isAttachedToWindow }
+                ?.requestFocus()
+            savedFocus = null
         }
     }
+
+    /** the host screen's content child (the keypad overlay is the other child) */
+    private fun contentChild(): View? = (0 until container.childCount)
+        .map { container.getChildAt(it) }
+        .firstOrNull { it !== root }
 
     /** real blur of the screen behind the keypad (API 31+), scrim dim covers older */
     private fun blurContent(on: Boolean) {
         if (android.os.Build.VERSION.SDK_INT < 31) return
         try {
-            val content = (0 until container.childCount)
-                .map { container.getChildAt(it) }
-                .firstOrNull { it !== root }
-            content?.setRenderEffect(
+            contentChild()?.setRenderEffect(
                 if (on) android.graphics.RenderEffect.createBlurEffect(25f, 25f,
                         android.graphics.Shader.TileMode.CLAMP)
                 else null)
         } catch (_: Exception) {}
+    }
+
+    /**
+     * The keypad is an overlay INSIDE the host window, so the D-pad's focus search
+     * otherwise interleaves keypad rows with the host screen's buttons behind it
+     * (issue #3 — visible on the initial PIN setup screen). Blocking descendant
+     * focus on the content while the keypad is up keeps the D-pad inside the grid;
+     * the original state is restored on hide.
+     */
+    private fun blockContentFocus(on: Boolean) {
+        val content = contentChild() as? ViewGroup ?: return
+        if (on) {
+            savedDescendantFocusability = content.descendantFocusability
+            content.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+        } else {
+            savedDescendantFocusability?.let { content.descendantFocusability = it }
+            savedDescendantFocusability = null
+        }
     }
 
     companion object {

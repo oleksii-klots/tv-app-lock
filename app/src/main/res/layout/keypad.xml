@@ -5,7 +5,7 @@
     android:fillViewport="true"
     android:background="#B3050708"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="false">
 
     <LinearLayout
         android:id="@+id/keypad_root"
