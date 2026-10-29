@@ -206,6 +206,7 @@ class MainActivity : Activity() {
                 Prefs(this).setPin(pinBuffer)
                 Toast.makeText(this, R.string.pin_saved, Toast.LENGTH_LONG).show()
                 pinBuffer = ""; pinMode = false
+                keypad.hide() // auto-dismiss once the PIN is saved (issue #7)
                 updateStatus()
             }
         } else {
