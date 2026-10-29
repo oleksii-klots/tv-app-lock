@@ -22,4 +22,6 @@
     <string name="lock_armed">Замок: заблоковано 🔒</string>
     <string name="lock_open_fmt">Замок: ВІДКРИТО ще %1$d хв 🔓</string>
     <string name="lock_open_now">Замок: відкритий сеанс 🔓</string>
+<string name="enter_pin_unlock">Введіть поточний PIN, щоб розблокувати налаштування</string>
+<string name="pin_wrong">Невірний PIN — спробуйте ще раз</string>
 </resources>
