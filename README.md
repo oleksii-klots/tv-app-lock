@@ -55,6 +55,7 @@ and the gate appearing.
 | | |
 |---|---|
 | 🔢 PIN | 4 digits, typed with the remote, auto-saves |
+| 🔒 Settings PIN-gated | opening the app asks for the current PIN before any change (v1.27+) |
 | 📱 App picker | pick any app visible on the TV home screen (LAUNCHER + LEANBACK_LAUNCHER) |
 | ⏱️ Grace period | 0 / 5 / 15 / 30 / 60 min / until reboot, cycled from the UI |
 | 🔓 State visible | the main screen always shows whether the lock is armed or open |
@@ -103,6 +104,7 @@ adb shell appops set com.alexk.tvlock SYSTEM_ALERT_WINDOW allow
 
 **4. Open TV App Lock on the TV** → *Set PIN* → pick the apps to lock. The
 guardian service starts by itself and survives reboots — no extra steps.
+From v1.27 on, reopening the app asks for the current PIN first.
 
 ## Known limitations (honest list)
 
