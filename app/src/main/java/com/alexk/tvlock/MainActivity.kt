@@ -16,6 +16,9 @@ class MainActivity : Activity() {
     private lateinit var keypad: KeypadHelper
     private var pinBuffer = ""
     private var pinMode = false
+    private var verifyMode = false   // PIN gate over the settings screen
+    private var unlocked = false
+    private var expectSubScreen = false // round-trip to our own picker keeps the session
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +29,7 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.btn_setup_pin).setOnClickListener { showPinEntry() }
         graceBtn.setOnClickListener { cycleGrace() }
         findViewById<Button>(R.id.btn_blocked).setOnClickListener {
+            expectSubScreen = true
             startActivity(Intent(this, BlockedAppsActivity::class.java))
         }
         findViewById<Button>(R.id.btn_service).setOnClickListener {
@@ -43,7 +47,12 @@ class MainActivity : Activity() {
             } catch (_: Exception) { "?" })
         keypad = KeypadHelper(this, findViewById(R.id.main_root),
             onDigit = { kPinDigit(it) }, onBackspace = { kPinBack() }, onClear = { kPinClear() })
-        updateStatus()
+        // Settings are PIN-gated (the launcher icon stays visible on purpose): a child
+        // who finds the app must not be able to change the PIN, blocked list or grace.
+        // First run has no PIN yet — nothing to protect, setup must stay reachable.
+        unlocked = Prefs(this).pin().isEmpty()
+        setSettingsEnabled(unlocked)
+        if (unlocked) updateStatus() else startVerify()
     }
 
     override fun onResume() {
@@ -52,7 +61,16 @@ class MainActivity : Activity() {
             startServiceIfAllowed()
             LockPollService.instance?.reloadPrefs()
         }
-        updateStatus()
+        // fail-closed: re-lock on every return to this activity, except the
+        // round-trip to our own sub-screen (blocked-apps picker)
+        if (expectSubScreen) {
+            expectSubScreen = false
+        } else if (Prefs(this).pin().isNotEmpty()) {
+            unlocked = false
+            setSettingsEnabled(false)
+            startVerify()
+        }
+        if (unlocked) updateStatus()
     }
 
     private fun hasUsageAccess(): Boolean {
@@ -172,12 +190,40 @@ class MainActivity : Activity() {
 
     private fun confirmPin() {
         if (pinBuffer.length == 4) {
-            Prefs(this).setPin(pinBuffer)
-            Toast.makeText(this, R.string.pin_saved, Toast.LENGTH_LONG).show()
-            pinBuffer = ""; pinMode = false
-            updateStatus()
+            if (verifyMode) {
+                if (pinBuffer == Prefs(this).pin()) {
+                    verifyMode = false; pinMode = false; pinBuffer = ""
+                    unlocked = true
+                    setSettingsEnabled(true)
+                    keypad.hide()
+                    updateStatus()
+                } else {
+                    pinBuffer = ""
+                    statusText.text = getString(R.string.enter_pin_unlock)
+                    Toast.makeText(this, R.string.pin_wrong, Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Prefs(this).setPin(pinBuffer)
+                Toast.makeText(this, R.string.pin_saved, Toast.LENGTH_LONG).show()
+                pinBuffer = ""; pinMode = false
+                updateStatus()
+            }
         } else {
             Toast.makeText(this, R.string.pin_need_4, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** PIN gate over the settings screen — reuses the same 4-digit entry machinery */
+    private fun startVerify() {
+        pinBuffer = ""
+        verifyMode = true
+        pinMode = true
+        statusText.text = getString(R.string.enter_pin_unlock)
+    }
+
+    private fun setSettingsEnabled(enabled: Boolean) {
+        for (id in listOf(R.id.btn_setup_pin, R.id.btn_grace, R.id.btn_blocked, R.id.btn_service)) {
+            findViewById<Button>(id).isEnabled = enabled
         }
     }
 }

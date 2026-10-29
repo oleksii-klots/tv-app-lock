@@ -25,4 +25,6 @@
     <string name="lock_armed">Lock: armed 🔒</string>
     <string name="lock_open_fmt">Lock: OPEN for %1$d more min 🔓</string>
     <string name="lock_open_now">Lock: open session 🔓</string>
+<string name="enter_pin_unlock">Enter current PIN to unlock settings</string>
+<string name="pin_wrong">Wrong PIN — try again</string>
 </resources>
